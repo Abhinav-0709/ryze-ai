@@ -73,6 +73,11 @@ Ryze-AI uses a fixed set of components to ensure reliability. The AI cannot crea
 - **Complex Logic**: The generated code is primarily for UI layout and simple interactions. Complex application logic is limited.
 - **Mock Data**: Charts and Tables use placeholder data unless specific data is provided in the prompt.
 
+## Troubleshooting
+
+- **Layout Alignment Issues**: If AI-generated layouts (like "center the button") don't appear correct, it may be due to the AI using standard CSS props (`justifyContent`) instead of component props (`justify`). The system attempts to auto-correct this, but specifying "use the justify prop" in your prompt can help.
+- **Text Duplication**: If you see duplicated text in the chat, refresh the page. This was a known issue with streaming response handling that has been patched.
+
 ## Future Improvements
 
 - **Authentication**: User accounts to save projects.
