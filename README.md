@@ -41,6 +41,48 @@ The core intelligence of Ryze-AI is split into three specialized agents:
 
 ---
 
+## 🚀 Getting Started
+
+Follow these steps to set up Ryze-AI locally.
+
+### Prerequisites
+
+*   **Node.js 18+** (Required for Next.js 14)
+*   **Gemini API Key** (Get it from [Google AI Studio](https://aistudio.google.com/))
+*   **Groq API Key** (Get it from [Groq Console](https://console.groq.com/))
+
+### Installation
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/Abhinav-0709/ryze-ai.git
+    cd ryze-ai
+    ```
+
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    ```
+
+3.  **Configure Environment Variables**
+    Create a `.env.local` file in the root directory and add your keys:
+    ```env
+    GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_key_here
+    GROQ_API_KEY=your_groq_key_here
+    ```
+
+4.  **Run the Development Server**
+    ```bash
+    npm run dev
+    ```
+
+5.  **Launch the App**
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
+
 ## 🧩 Component System Design
 
 Ryze-AI avoids "AI Hallucinations" by refusing to let the AI invent components. It uses a **Deterministic Component Registry**:

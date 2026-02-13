@@ -11,7 +11,7 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
             <div
                 ref={ref}
                 className={cn(
-                    "flex h-[300px] w-full items-end justify-center gap-2 rounded-lg border bg-card p-4 text-card-foreground shadow-sm",
+                    "flex h-75 w-full items-end justify-center gap-2 rounded-lg border bg-card p-4 text-card-foreground shadow-sm",
                     className
                 )}
                 {...props}

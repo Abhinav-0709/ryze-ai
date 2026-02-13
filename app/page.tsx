@@ -294,7 +294,7 @@ function App() {
           </div>
 
           <div className="flex-1 overflow-auto p-4 md:p-6 bg-neutral-900/50">
-            <div className="min-h-[300px] h-full w-full rounded-lg border border-border bg-card shadow-2xl overflow-hidden flex flex-col">
+            <div className="min-h-75 h-full w-full rounded-lg border border-border bg-card shadow-2xl overflow-hidden flex flex-col">
                <div className="w-full h-full text-foreground overflow-auto">
                   <LivePreview />
                </div>
