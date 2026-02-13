@@ -1,8 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-// Mock implementation as a placeholder
-// In a real implementation, you might use recharts or similar
 export interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
     type?: 'bar' | 'line' | 'pie';
 }

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { Send, Loader2, Bot, User } from "lucide-react";
+import { Send, Loader2, Bot, User, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 
@@ -17,10 +17,20 @@ interface ChatProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
   isLoading: boolean;
+  onReset: () => void;
 }
 
-export function Chat({ messages, onSendMessage, isLoading }: ChatProps) {
+export function Chat({ messages, onSendMessage, isLoading, onReset }: ChatProps) {
   const [input, setInput] = useState("");
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,15 +40,16 @@ export function Chat({ messages, onSendMessage, isLoading }: ChatProps) {
   };
 
   return (
-    <div className="flex h-full flex-col border-r bg-muted/10">
-      {/* Header */}
-      <div className="border-b p-4">
-        <h2 className="text-lg font-semibold tracking-tight">Ryze AI Agent</h2>
-        <p className="text-xs text-muted-foreground">Describe your UI intent</p>
+    <div className="flex h-full flex-col relative bg-card overflow-hidden">
+      {/* Header Reset Button - Absolute Top Right */}
+      <div className="absolute top-2 right-4 z-20">
+        <Button variant="ghost" size="icon" onClick={onReset} title="Reset Chat" className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-50 hover:opacity-100 transition-opacity">
+          <RefreshCw size={16} />
+        </Button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages - Takes full height, with bottom padding for input area */}
+      <div className="h-full overflow-y-auto p-4 pb-24 space-y-4 scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -55,26 +66,27 @@ export function Chat({ messages, onSendMessage, isLoading }: ChatProps) {
                   : "bg-muted text-foreground"
               )}
             >
-               <div className="flex items-center gap-2 border-b border-black/10 pb-1 mb-1 opacity-50 text-xs uppercase font-bold">
-                  {msg.role === "user" ? <User size={12} /> : <Bot size={12} />}
-                  {msg.role === "user" ? "You" : "Ryze"}
-               </div>
-               <ReactMarkdown>{msg.content}</ReactMarkdown>
+              <div className="flex items-center gap-2 border-b border-black/10 pb-1 mb-1 opacity-50 text-xs uppercase font-bold">
+                {msg.role === "user" ? <User size={12} /> : <Bot size={12} />}
+                {msg.role === "user" ? "You" : "Ryze"}
+              </div>
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
             </div>
           </div>
         ))}
         {isLoading && (
-            <div className="flex w-full justify-start">
-               <div className="flex max-w-[85%] items-center gap-2 rounded-lg bg-muted px-4 py-3 text-sm text-foreground">
-                   <Loader2 className="h-4 w-4 animate-spin" />
-                   Thinking...
-               </div>
+          <div className="flex w-full justify-start">
+            <div className="flex max-w-[85%] items-center gap-2 rounded-lg bg-muted px-4 py-3 text-sm text-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Thinking...
             </div>
+          </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="border-t p-4">
+      {/* Input - Absolute Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border z-20">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             value={input}

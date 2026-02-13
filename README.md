@@ -1,89 +1,78 @@
 # Ryze-AI: AI-Powered UI Agent
 
-Ryze-AI is an intelligent agent that converts natural language UI intent into working React code with a live preview. It enforces a **deterministic component system** to ensure safety, consistency, and reproducibility.
+Ryze-AI is an intelligent, deterministic UI generator that converts natural language into working, styled React code. It uses a specialized **multi-agent system** to plan, generate, and explain UI components, enforcing a strict component registry to ensure design consistency and prevent hallucinations.
 
-## Features
+## 🏗️ Architecture Overview
 
-- **Natural Language to UI**: Describe your desired interface, and Ryze-AI generates the code.
-- **Deterministic Components**: Uses a strictly defined library (Card, Button, Input, Table, etc.) to prevent hallucinations and maintain design consistency.
-- **3-Stage AI Pipeline**:
-  1.  **Planner (Gemini)**: Analyzes intent and structures the layout.
-  2.  **Generator (Gemini)**: Converts the plan into valid React code using only allowed components.
-  3.  **Explainer (Groq)**: Explains the design choices in plain English.
-- **Live Preview**: See the generated UI instantly alongside the code.
-- **Interactive Chat**: Iterate on designs through conversation.
-
-## Architecture
+Ryze-AI is built on a modern, robust stack designed for speed and reliability:
 
 - **Frontend**: Next.js 14+ (App Router), TypeScript, Tailwind CSS.
-- **Backend API**: Next.js API Routes (`/api/chat`).
-- **AI Models**:
-    -   Google Gemini 1.5 Pro (Planning & Code Generation).
-    -   Groq Llama 3 (Explanation).
-- **State Management**: React State (MVP).
-- **Component Library**: Custom implementation using Radix UI primitives and Tailwind CSS variables.
+- **State Management**: React `useState` & `useEffect` for local state, with `localStorage` persistence for session recovery.
+- **AI Orchestration**:
+    - **Planner Agent**: Google **Gemini 2.5 Flash** (Structures the intent).
+    - **Generator Agent**: Google **Gemini 2.5 Flash** (Writes the strict React code).
+    - **Explainer Agent**: **Groq Llama 3** (Provides high-speed, natural language explanations).
+- **Live Preview**: `react-live` engine for real-time, in-browser compilation and rendering of generated code.
+- **Styling System**: CSS Variables + Tailwind CSS (configured for a standard "VSCode Dark" theme).
 
-## Getting Started
+### System Data Flow
 
-### Prerequisites
+![alt text](<public/system arch.png>)
 
-- Node.js 18+
-- API Keys for Google Generative AI and Groq.
+## 🤖 Agent Design & Prompts
 
-### Installation
+The core intelligence of Ryze-AI is split into three specialized agents:
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/your-repo/ryze-ai.git
-    cd ryze-ai
-    ```
+### 1. The Planner Agent
+*   **Goal**: Understand *what* to build, not *how* to write code.
+*   **Prompt Strategy**: "Chain of Thought" prompting. The agent is instructed to break down a user request (e.g., "Login Page") into a hierarchical JSON structure defining layout containers, components, and content.
+*   **Output**: Pure JSON Plan.
 
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
+### 2. The Generator Agent
+*   **Goal**: Translate the JSON Plan into executable React code.
+*   **Strict Constraints**: 
+    *   **Whitelist Only**: Can strictly ONLY use components from the `ComponentRegistry` (`Card`, `Button`, `Input`, etc.).
+    *   **No Standard HTML**: Forbidden from using `<div>`, `<span>`, etc., unless absolutely necessary for layout. Must use `Layout.Flex` or `Layout.Grid`.
+    *   **Separation of Concerns**: Allowed to use Tailwind classes for *layout* (margin, padding) but FORBIDDEN from using them for *visuals* (colors, rounding) on primitive components, forcing reliance on the Design System's `variant` props.
 
-3.  Set up environment variables:
-    Create a `.env.local` file in the root directory:
-    ```env
-    GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_key
-    GROQ_API_KEY=your_groq_key
-    ```
+### 3. The Explainer Agent
+*   **Goal**: Inform the user what happened.
+*   **Prompt Strategy**: Concise, friendly, and non-technical. Focuses on design decisions ("I chose a 2-column layout...") rather than implementation details ("I used flex-row...").
 
-4.  Run the development server:
-    ```bash
-    npm run dev
-    ```
+---
 
-5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
+## 🧩 Component System Design
 
-## Component System
+Ryze-AI avoids "AI Hallucinations" by refusing to let the AI invent components. It uses a **Deterministic Component Registry**:
 
-Ryze-AI uses a fixed set of components to ensure reliability. The AI cannot create new components or use arbitrary HTML tags widely.
+*   **Registry Map**: A central object in `lib/registry.ts` defines every allowed component, its props, and usage examples.
+*   **Primitives**:
+    *   `Layout`: `Container`, `Grid`, `Flex`
+    *   `Surfaces`: `Card` (Header, Content, Footer), `Sidebar`, `Navbar`
+    *   `Inputs`: `Button` (variants: default, destructive, outline, ghost), `Input`
+    *   `Data`: `Table`, `Chart` (Mock data wrapper)
+*   **Theming**: All components consume CSS variables (`--primary`, `--muted`, `--destructive`) defined in `globals.css`. This allows global theme switching without rewriting component code.
 
-**Available Components:**
-- `Layout`: Container, Grid, Flex
-- `Structure`: Card, Sidebar, Navbar, Modal (Dialog)
-- `Data Display`: Table, Chart (Mock)
-- `Form`: Input, Button
+---
 
-## Known Limitations
+## ⚠️ Known Limitations
 
-- **State Persistence**: Chat history and generated code are not persisted to a database in this version; they reset on refresh.
-- **Complex Logic**: The generated code is primarily for UI layout and simple interactions. Complex application logic is limited.
-- **Mock Data**: Charts and Tables use placeholder data unless specific data is provided in the prompt.
+1.  **Complex Logic**: The generator is optimized for *UI Layout* and *Static Content*. It does not currently generate complex React state (e.g., multi-step forms, real API integrations) within the generated code.
+2.  **Context Retention**: While the "Plan" is updated iteratively, very long conversational contexts may occasionally confuse the Planner regarding the current state of the UI.
+3.  **Mobile Preview**: The *application itself* is fully responsive (mobile tabs), but the *generated UI code* inside the preview window depends on the AI correctly applying responsive Tailwind classes (e.g., `md:grid-cols-2`), which it sometimes misses.
 
-## Troubleshooting
+---
 
-- **Layout Alignment Issues**: If AI-generated layouts (like "center the button") don't appear correct, it may be due to the AI using standard CSS props (`justifyContent`) instead of component props (`justify`). The system attempts to auto-correct this, but specifying "use the justify prop" in your prompt can help.
-- **Text Duplication**: If you see duplicated text in the chat, refresh the page. This was a known issue with streaming response handling that has been patched.
+## 🚀 Future Roadmap & Improvements
 
-## Future Improvements
+With more time, here is how Ryze-AI would evolve:
 
-- **Authentication**: User accounts to save projects.
-- **Database Integration**: Store history and versions in a database.
-- **Advanced Editing**: Visual drag-and-drop editor for the generated components.
-- **Theme Customization**: AI-driven theme generation (colors, fonts).
+*   **Database Integration**: Move from `localStorage` to a Postgres/Supabase backend to persist user projects, history, and shared designs.
+*   **Hybrid Editor**: Implement a visual "Drag-and-Drop" editor that sits on top of the AI generator, allowing users to manually tweak margins/padding without writing code.
+*   **Theme Generator**: Add a new "Designer Agent" that can rewrite `globals.css` on the fly, allowing users to ask for "Cyberpunk Theme" or "Pastel Theme" and see the entire app update instantly.
+*   **Component Learning**: Allow users to "teach" the AI new components by pasting in code, which gets added to the Registry dynamically.
+
+---
 
 ## License
 
